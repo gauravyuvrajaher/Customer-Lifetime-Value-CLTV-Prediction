@@ -47,8 +47,8 @@ st.markdown(
 # -----------------------------------------------------
 @st.cache_data
 def load_data():
-    orders = pd.read_csv("https://github.com/gauravyuvrajaher/Customer-Lifetime-Value-CLTV-Prediction/blob/main/order.csv")
-    customers = pd.read_csv("https://github.com/gauravyuvrajaher/Customer-Lifetime-Value-CLTV-Prediction/blob/main/customer.csv")
+    orders = pd.read_csv("data/order.csv")
+    customers = pd.read_csv("data/customer.csv")
 
     orders["order_purchase_timestamp"] = pd.to_datetime(
         orders["order_purchase_timestamp"]
@@ -56,7 +56,6 @@ def load_data():
 
     df = orders.merge(customers, on="order_id", how="inner")
 
-    # Aggregate payment per order
     df = df.groupby(
         ["customer_id", "order_id", "order_purchase_timestamp"],
         as_index=False
@@ -234,4 +233,5 @@ st.markdown(
     Ideal for Marketing, Retention & Revenue Forecasting
     """
 )
+
 
