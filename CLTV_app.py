@@ -53,7 +53,6 @@ def load_data():
 
     customers = pd.read_csv(
         "https://raw.githubusercontent.com/gauravyuvrajaher/Customer-Lifetime-Value-CLTV-Prediction/main/customer.csv"
-        
     )
 
     orders["order_purchase_timestamp"] = pd.to_datetime(
@@ -239,6 +238,7 @@ st.markdown(
     Ideal for Marketing, Retention & Revenue Forecasting
     """
 )
+
 
 
 
