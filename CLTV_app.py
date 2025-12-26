@@ -16,29 +16,6 @@ st.set_page_config(
     page_icon="📊",
     layout="wide"
 )
-st.markdown("""
-## 📊 Customer Lifetime Value (CLTV) Analytics Dashboard
-
-### 🔍 Business Context
-To support **medium- to long-term business planning**, this application estimates the **future value of existing customers** based on their historical purchasing behaviour.
-
-### 🧠 Analytical Approach
-This dashboard applies **probabilistic CLTV models** commonly used in industry:
-
-- **BG-NBD Model** – predicts how often a customer is expected to purchase in the future  
-- **Gamma-Gamma Model** – estimates the expected monetary value per transaction  
-
-By combining these models, we forecast **Customer Lifetime Value (CLTV)** across **3, 6, and 12-month horizons**.
-
-### 🎯 Business Value
-The insights help teams to:
-- Identify **high-value and VIP customers**
-- Design **targeted marketing and retention strategies**
-- Forecast **future revenue**
-- Support **data-driven decision making**
-""")
-
-st.divider()
 
 # Sidebar
 
@@ -52,19 +29,7 @@ discount_rate = st.sidebar.slider(
     "Discount Rate",
     0.0, 0.05, 0.01, 0.005
 )
-st.sidebar.markdown("""
-### ℹ️ How to choose parameters
 
-**Analysis Date**
-- Represents the point in time when CLTV is calculated.
-- Select a date **just after the last transaction** in the dataset.
-- Recommended value: **2018-09-05**
-
-**Discount Rate**
-- Adjusts future revenue for the **time value of money**.
-- Typical values range from **0.5% to 2%**.
-- Default **1%** is commonly used in CLTV modelling.
-""")
 
 # Title
 
@@ -281,6 +246,7 @@ st.markdown(
     Ideal for Marketing, Retention & Revenue Forecasting
     """
 )
+
 
 
 
