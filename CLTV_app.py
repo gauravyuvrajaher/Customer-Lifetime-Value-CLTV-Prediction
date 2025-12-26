@@ -16,10 +16,32 @@ st.set_page_config(
     page_icon="📊",
     layout="wide"
 )
+st.markdown("""
+## 📊 Customer Lifetime Value (CLTV) Analytics Dashboard
 
-# -----------------------------------------------------
+### 🔍 Business Context
+To support **medium- to long-term business planning**, this application estimates the **future value of existing customers** based on their historical purchasing behaviour.
+
+### 🧠 Analytical Approach
+This dashboard applies **probabilistic CLTV models** commonly used in industry:
+
+- **BG-NBD Model** – predicts how often a customer is expected to purchase in the future  
+- **Gamma-Gamma Model** – estimates the expected monetary value per transaction  
+
+By combining these models, we forecast **Customer Lifetime Value (CLTV)** across **3, 6, and 12-month horizons**.
+
+### 🎯 Business Value
+The insights help teams to:
+- Identify **high-value and VIP customers**
+- Design **targeted marketing and retention strategies**
+- Forecast **future revenue**
+- Support **data-driven decision making**
+""")
+
+st.divider()
+
 # Sidebar
-# -----------------------------------------------------
+
 st.sidebar.title("📊 CLTV Controls")
 analysis_date = st.sidebar.date_input(
     "Analysis Date",
@@ -30,10 +52,22 @@ discount_rate = st.sidebar.slider(
     "Discount Rate",
     0.0, 0.05, 0.01, 0.005
 )
+st.sidebar.markdown("""
+### ℹ️ How to choose parameters
 
-# -----------------------------------------------------
+**Analysis Date**
+- Represents the point in time when CLTV is calculated.
+- Select a date **just after the last transaction** in the dataset.
+- Recommended value: **2018-09-05**
+
+**Discount Rate**
+- Adjusts future revenue for the **time value of money**.
+- Typical values range from **0.5% to 2%**.
+- Default **1%** is commonly used in CLTV modelling.
+""")
+
 # Title
-# -----------------------------------------------------
+
 st.title("📈 Customer Lifetime Value (CLTV) Analytics")
 st.markdown(
     """
@@ -42,9 +76,8 @@ st.markdown(
     """
 )
 
-# -----------------------------------------------------
+
 # Load Data
-# -----------------------------------------------------
 @st.cache_data
 def load_data():
     orders = pd.read_csv(
@@ -74,9 +107,9 @@ def load_data():
 
 df = load_data()
 
-# -----------------------------------------------------
+
 # CLTV Feature Engineering
-# -----------------------------------------------------
+
 today_date = dt.datetime.combine(analysis_date, dt.datetime.min.time())
 
 cltv_df = df.groupby("customer_id").agg({
@@ -96,9 +129,9 @@ cltv_df["recency"] /= 7
 cltv_df["T"] /= 7
 cltv_df["monetary"] /= cltv_df["frequency"]
 
-# -----------------------------------------------------
+
 # BG-NBD Model
-# -----------------------------------------------------
+
 bgf = BetaGeoFitter(penalizer_coef=0.001)
 bgf.fit(
     cltv_df["frequency"],
@@ -114,9 +147,9 @@ cltv_df["exp_purc_3m"] = bgf.predict(
     12, cltv_df["frequency"], cltv_df["recency"], cltv_df["T"]
 )
 
-# -----------------------------------------------------
+
 # Gamma-Gamma Model
-# -----------------------------------------------------
+
 ggf = GammaGammaFitter(penalizer_coef=0.01)
 ggf.fit(
     cltv_df["frequency"],
@@ -128,9 +161,9 @@ cltv_df["exp_avg_profit"] = ggf.conditional_expected_average_profit(
     cltv_df["monetary"]
 )
 
-# -----------------------------------------------------
+
 # CLTV Calculation (Multiple Horizons)
-# -----------------------------------------------------
+
 for m in [3, 6, 12]:
     cltv_df[f"cltv_{m}m"] = ggf.customer_lifetime_value(
         bgf,
@@ -143,19 +176,26 @@ for m in [3, 6, 12]:
         discount_rate=discount_rate
     )
 
-# -----------------------------------------------------
 # Segmentation
-# -----------------------------------------------------
+
 cltv_df["segment"] = pd.qcut(
     cltv_df["cltv_12m"],
     4,
     labels=["Low Value", "Mid Value", "High Value", "VIP"]
 )
 
-# -----------------------------------------------------
+
 # Executive KPIs
-# -----------------------------------------------------
+
 st.subheader("📌 Executive Summary")
+st.info("""
+📌 **How to interpret the results**
+
+- CLTV represents the **expected future value** of a customer.
+- Higher CLTV indicates customers who are more valuable over time.
+- Segments (Low, Mid, High, VIP) are created based on **12-month CLTV**.
+- These insights support marketing prioritisation and strategic planning.
+""")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -165,9 +205,8 @@ col3.metric("Avg CLTV (12M)", f"${cltv_df['cltv_12m'].mean():,.0f}")
 col4.metric("VIP Revenue Share",
             f"{(cltv_df[cltv_df['segment']=='VIP']['cltv_12m'].sum() / cltv_df['cltv_12m'].sum())*100:.1f}%")
 
-# -----------------------------------------------------
 # Segment Analysis
-# -----------------------------------------------------
+
 st.subheader("🎯 CLTV Segment Analysis")
 
 segment_summary = cltv_df.groupby("segment").agg({
@@ -179,9 +218,9 @@ segment_summary = cltv_df.groupby("segment").agg({
 
 st.dataframe(segment_summary.style.format("{:,.2f}"))
 
-# -----------------------------------------------------
+
 # Visualizations
-# -----------------------------------------------------
+
 st.subheader("📊 Visual Insights")
 
 col1, col2 = st.columns(2)
@@ -207,18 +246,18 @@ with col2:
     ax.set_title("CLTV Distribution by Segment")
     st.pyplot(fig)
 
-# -----------------------------------------------------
+
 # Model Diagnostics
-# -----------------------------------------------------
+
 st.subheader("🧠 BG-NBD Model Diagnostics")
 
 fig, ax = plt.subplots()
 plot_period_transactions(bgf, ax=ax)
 st.pyplot(fig)
 
-# -----------------------------------------------------
+
 # Customer Explorer
-# -----------------------------------------------------
+
 st.subheader("🔍 Customer Explorer")
 
 selected_segment = st.selectbox(
@@ -232,9 +271,9 @@ st.dataframe(
     .head(20)
 )
 
-# -----------------------------------------------------
+
 # Footer
-# -----------------------------------------------------
+
 st.markdown(
     """
     ---
@@ -242,6 +281,7 @@ st.markdown(
     Ideal for Marketing, Retention & Revenue Forecasting
     """
 )
+
 
 
 
